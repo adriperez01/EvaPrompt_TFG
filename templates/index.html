@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvaPrompt - Evaluación de Prompts</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div id="app" class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title text-center">EvaPrompt</h1>
+                        <p class="card-text text-center">Bienvenido a EvaPrompt, la aplicación para la evaluación de prompts.</p>
+                        <p class="card-text text-center">Aquí puedes evaluar la capacidad de diferentes modelos de inteligencia artificial para generar respuestas a distintos estímulos.</p>
+                        <p class="card-text text-center">Por favor, regístrate o inicia sesión para comenzar.</p>
+                        <div class="text-center">
+                            <button v-on:click="goTo('/registro')" class="btn btn-primary mr-3">Registrarse</button>
+                            <button v-on:click="goTo('/login')" class="btn btn-primary">Iniciar sesión</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            methods: {
+                goTo: function(url) {
+                    window.location.href = url;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

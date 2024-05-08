@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title text-center">¡Regístrate para comenzar!</h1>
+                        <form id="registro" method="post">
+                            <div class="form-group">
+                                <label for="nombre">Usuario:</label>
+                                <input type="text" id="nombre" name="nombre" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="correo_electronico">Correo electrónico:</label>
+                                <input type="email" id="correo_electronico" name="correo_electronico" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contrasena">Contraseña:</label>
+                                <input type="password" id="contrasena" name="contrasena" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmarContrasena">Confirmar contraseña:</label>
+                                <input type="password" id="confirmarContrasena" name="confirmarContrasena" class="form-control" required>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Registrarse</button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-3">
+                            <a href="login">¿Ya tienes una cuenta? Inicia sesión aquí.</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="/static/js/registerscript.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Dataset</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Barra lateral -->
+            <nav class="col-md-2 d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                Información general
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Otra sección
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <main role="main" class="col-md-12 ml-sm-auto col-lg-12 px-4">
+                <div class="container mt-5">
+                    <h1>Subir Dataset</h1>
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="datasetFile">Seleccionar archivo CSV:</label>
+                            <input type="file" class="form-control-file" id="datasetFile" accept=".csv" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="columnaEvaluar">Columna a evaluar:</label>
+                            <select class="form-control" id="columnaEvaluar">
+                                <option value="">Seleccionar columna</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="columnaAsociada">Columna asociada:</label>
+                            <select class="form-control" id="columnaAsociada">
+                                <option value="">Seleccionar columna</option>
+                            </select>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Subir Dataset</button>
+                        </div>
+                    </form>
+                    <div id="datasetPreview">
+                        <h3>Previsualización del Dataset</h3>
+                        <table class="table table-bordered">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/mostrar_dataset.js"></script>
+    <script src="/static/js/data_config.js" ></script>
+</body>
+</html>
