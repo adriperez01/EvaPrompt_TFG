@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Principal</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/media_query.css">
+    <link rel="stylesheet" href="../static/css/style.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">EvaPrompt</a>
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item mr-auto">
+                <li class="nav-item">
                     <a class="nav-link" href="/logout">Cerrar Sesión</a>
                 </li>
             </ul>
@@ -23,26 +25,30 @@
 
     <div class="container-fluid">
         <div class="row">
-            <!-- Barra lateral -->
-            <nav class="col-md-2 d-md-block bg-light sidebar">
+             <!-- Barra lateral -->
+             <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#">
-                                Información general
+                            <a class="nav-link active" href="/dashboard">
+                                Primeros pasos
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                Otra sección
+                            <a class="nav-link" href="/upload_dataset">
+                               Subir Dataset
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/evaluador">
+                               Evaluador de prompts
                             </a>
                         </li>
                     </ul>
                 </div>
             </nav>
-
             <!-- Contenido principal -->
-            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Página Principal</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">

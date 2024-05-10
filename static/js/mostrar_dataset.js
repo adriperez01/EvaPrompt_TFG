@@ -1,10 +1,11 @@
 function actualizarTabla(dataset, columnaEvaluar, columnaAsociada) {
     console.log('Actualizando tabla con los siguientes datos:', dataset);
-
+    console.log(columnaAsociada)
+    console.log(columnaEvaluar)
     // Limpiar el contenido actual de la tabla
     var tbody = $('#datasetPreview').find('tbody');
     tbody.empty();
-
+    console.log(typeof(dataset))
     // Verificar si el dataset es un array de objetos y si las columnas existen en los objetos
     if (Array.isArray(dataset) && dataset.length > 0 && typeof dataset[0] === 'object' &&
         columnaEvaluar in dataset[0] && columnaAsociada in dataset[0]) {

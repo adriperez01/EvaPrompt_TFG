@@ -62,11 +62,12 @@ function cargarColumnas(columnas) {
         // Agregar el archivo seleccionado al FormData
         var fileInput = $('#datasetFile')[0];
         formData.append('file', fileInput.files[0]);
-
+        // Agregar nombre del Dataset
+        var nombre = $('#nombre').val();
+        formData.append('nombre', nombre);
         // Agregar el valor de la columna seleccionada a evaluar al FormData
         var columnaEvaluar = $('#columnaEvaluar').val();
         formData.append('columnaEvaluar', columnaEvaluar);
-
         // Agregar el valor de la columna seleccionada asociada al FormData
         var columnaAsociada = $('#columnaAsociada').val();
         formData.append('columnaAsociada', columnaAsociada);

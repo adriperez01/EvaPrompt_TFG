@@ -54,11 +54,16 @@ def upload_dataset():
     if request.method == 'GET':   
         if 'usuario' in session:
             usuario = session['usuario']
+            print(usuario[0])
             return render_template('upload_dataset.html')
         else:
             return redirect('/')
 
     elif request.method == 'POST':
+        # Insertar los datos en la tabla conjuntos_dato
+        nombre = request.form.get('nombre')
+        columnaEvaluar =  request.form.get('columnaEvaluar')
+        columnaAsociada = request.form.get('columnaAsociada')
         # Verificar si se envió un archivo
         if 'file' not in request.files:
             return jsonify({'error': 'No se proporcionó ningún archivo CSV'}), 400
@@ -80,7 +85,34 @@ def upload_dataset():
             # Parsear el contenido CSV
             dataset = parse_csv(csv_content)
             
+            #Insertar datos en BD
+            insert_datasetbd(nombre, columnaEvaluar, columnaAsociada,dataset)
+
             # Devolver las columnas y el dataset procesado
             return jsonify({'columnas': columnas, 'dataset': dataset}), 200
         
     return jsonify({'error': 'Método no permitido'}), 405
+
+@visual_bp.route('/evaluador', methods=['POST','GET'])
+def chat():
+    if request.method == 'GET':   
+        if 'usuario' in session:
+            usuario = session['usuario']
+            print(usuario[0])
+            return render_template('evaluator.html')
+        else:
+            return redirect('/')
+
+    elif request.method == 'POST':
+        data = session.get(dataset)
+        dato = request.json
+        user_message = dato['message']
+        resultados = basic_prompt(user_message, data)
+        priority_accuracy = resultados[0]
+
+        try:
+            bot_message = resultados[2]
+            response = {'message': bot_message, 'priority_accuracy': priority_accuracy}
+            return jsonify(response)
+        except Exception as e:
+            return jsonify({'error': str(e)})
