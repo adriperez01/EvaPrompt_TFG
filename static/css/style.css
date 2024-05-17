@@ -1,3 +1,67 @@
-.active {
-    background-color: #00000008;
+.chat-container {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    height: 500px; /* Ajusta el tamaño vertical del contenedor del chat según sea necesario */
+    overflow-y: auto; /* Permite el desplazamiento vertical para ver los mensajes anteriores */
+  }
+
+.input-container {
+    margin-top: 10px;
+}
+
+.message {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.user-message {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    color: #666666; /* Color gris para los mensajes de "Tú" */
+}
+
+.sistem-message {
+    background-color: #62946a;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 5px;
+    color: #ffffff; 
+}
+
+.eva-message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.accuracy-container {
+    background-color: #f2f2f2; /* Fondo gris claro */
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center; 
+    color: #666666; /* Color de texto gris */
+}
+
+.typing-dots {
+    animation: typing 1s infinite; /* Define la animación para los puntos suspensivos */
+}
+
+@keyframes typing {
+    0% {
+    content: ".";
+    }
+    33% {
+    content: "..";
+    }
+    66% {
+    content: "...";
+    }
 }

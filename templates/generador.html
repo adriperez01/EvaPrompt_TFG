@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Prompts</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/css/media_query.css">
+  <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Barra lateral -->
+            <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                Primeros pasos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/upload_dataset">
+                               Subir Dataset
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/v1/chat">
+                               Generador de Prompts
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <div class="container mt-5">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h2>Configuración de Prompt</h2>
+                            <form id="promptForm">
+                                <div class="form-group">
+                                    <label for="prompt">Escribe tu prompt:</label>
+                                    <textarea id="prompt" name="prompt" class="form-control" rows="4" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="technique">Técnica utilizada:</label>
+                                    <select class="form-control" id="technique">
+                                        <option value="zero-shot">Zero-Shot</option>
+                                        <option value="few-shot">Few-Shot</option>
+                                        <option value="cot">Chain of Thought (CoT)</option>
+                                    </select>
+                                </div>
+                                <div id="few-shot-examples" class="form-group" style="display: none;">
+                                    <label>Ejemplos para Few-Shot:</label>
+                                    <textarea class="form-control mb-2" placeholder="Ejemplo 1"></textarea>
+                                    <textarea class="form-control mb-2" placeholder="Ejemplo 2"></textarea>
+                                    <textarea class="form-control mb-2" placeholder="Ejemplo 3"></textarea>
+                                </div>
+                                <div id="cot-steps" class="form-group" style="display: none;">
+                                    <label>Pasos para Chain of Thought:</label>
+                                    <textarea class="form-control mb-2" placeholder="Paso 1"></textarea>
+                                    <textarea class="form-control mb-2" placeholder="Paso 2"></textarea>
+                                    <textarea class="form-control mb-2" placeholder="Paso 3"></textarea>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="generatePrompt()">Generar Prompt</button>
+                                <button type="button" class="btn btn-danger" onclick="clearForm()">Limpiar</button>
+                            </form>
+                        </div>
+                        <div class="col-md-8">
+                            <h2>Resultados</h2>
+                            <div class="result-container border p-3" id="results">
+                                <pre id="output" class="pre-scrollable"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="/static/js/mostrar_dat.js"></script>
+    <script src="/static/js/generador.js"></script>
+
+    <script>
+        // Función para mostrar u ocultar los campos adicionales según la técnica seleccionada
+        document.getElementById('technique').addEventListener('change', function() {
+            const selectedTechnique = this.value;
+            document.getElementById('few-shot-examples').style.display = selectedTechnique === 'few-shot' ? 'block' : 'none';
+            document.getElementById('cot-steps').style.display = selectedTechnique === 'cot' ? 'block' : 'none';
+        });
+
+        // Función para generar el prompt
+        async function generatePrompt() {
+            const prompt = document.getElementById('prompt').value;
+            const technique = document.getElementById('technique').value;
+
+            let examples = [];
+            let steps = [];
+
+            if (technique === 'few-shot') {
+                examples = Array.from(document.querySelectorAll('#few-shot-examples textarea')).map(textarea => textarea.value).filter(text => text.trim());
+            } else if (technique === 'cot') {
+                steps = Array.from(document.querySelectorAll('#cot-steps textarea')).map(textarea => textarea.value).filter(text => text.trim());
+            }
+
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt, technique, examples, steps }),
+            });
+
+            const result = await response.json();
+            document.getElementById('output').innerText = result.output;
+        }
+
+        // Función para limpiar el formulario y los resultados
+        function clearForm() {
+            document.getElementById('promptForm').reset();
+            document.getElementById('few-shot-examples').style.display = 'none';
+            document.getElementById('cot-steps').style.display = 'none';
+            document.getElementById('output').innerText = '';
+        }
+    </script>
+</body>
+</html>

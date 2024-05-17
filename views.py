@@ -3,6 +3,9 @@ import datetime
 from confiDB import *
 from services import *
 import csv
+import plotly.express as px
+import pandas as pd
+import plotly.io as pio
 
 visual_bp = Blueprint("visual",__name__)
 
@@ -43,11 +46,12 @@ def registro():
         return render_template('regpage.html')
     elif request.method == 'POST':
         data = request.get_json()
-        registro_usuario(data)
         try:
-            return jsonify({'message': 'Usuario creado correctamente'}), 200
-        except mysql.connector.Error as error:
-            return jsonify({'message': 'Error al registrar usuario'}), 400
+            response, status_code = registro_usuario(data)
+            return jsonify(response), status_code
+        except Exception as e:
+            print(f"Error al registrar usuario: {str(e)}")
+            return jsonify({'message': 'Error al registrar usuario'}), 500
 
 @visual_bp.route('/upload_dataset', methods=['POST','GET'])
 def upload_dataset():  
@@ -84,6 +88,7 @@ def upload_dataset():
             
             # Parsear el contenido CSV
             dataset = parse_csv(csv_content)
+            session['dataset'] = dataset
             
             #Insertar datos en BD
             insert_datasetbd(nombre, columnaEvaluar, columnaAsociada,dataset)
@@ -93,26 +98,101 @@ def upload_dataset():
         
     return jsonify({'error': 'Método no permitido'}), 405
 
-@visual_bp.route('/evaluador', methods=['POST','GET'])
+@visual_bp.route('/v1/chat', methods=['POST','GET'])
 def chat():
     if request.method == 'GET':   
         if 'usuario' in session:
             usuario = session['usuario']
-            print(usuario[0])
+            consulta_dataset(usuario[0])
             return render_template('evaluator.html')
         else:
             return redirect('/')
 
     elif request.method == 'POST':
-        data = session.get(dataset)
+        data = request.get_json()
+        prompt = []
+        bot_message = []
+        print(data)
         dato = request.json
         user_message = dato['message']
         resultados = basic_prompt(user_message, data)
+        for clave, valor in resultados[1].items():
+            prompt.append(clave)
+            bot_message.append(valor)
         priority_accuracy = resultados[0]
-
+        guardado_prompt(data,priority_accuracy)
         try:
-            bot_message = resultados[2]
-            response = {'message': bot_message, 'priority_accuracy': priority_accuracy}
+            response = {'message': bot_message, 'priority_accuracy': priority_accuracy, 'prompt': prompt}
             return jsonify(response)
         except Exception as e:
             return jsonify({'error': str(e)})
+
+@visual_bp.route('/generate', methods=['POST','GET'])
+def generate():
+    if request.method == 'GET':   
+        if 'usuario' in session:
+            usuario = session['usuario']
+            consulta_dataset(usuario[0])
+            return render_template('generador.html')
+        else:
+            return redirect('/')
+    data = request.json
+    prompt = data.get('prompt', '')
+
+    try:
+        response = generate_openai_response(prompt)
+        generated_text = response['choices'][0]['text']
+        
+        return jsonify({'output': generated_text})
+    except Exception as e:
+        print(f'Error generating prompt: {e}')
+        return jsonify({'error': 'Error generating prompt'}), 500        
+
+@visual_bp.route('/historial_prompts', methods=['GET', 'POST'])
+def historial_prompts():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    
+    query = "SELECT nombre_prompt, tecnica_utilizada, porcentaje_acierto FROM prompts"
+    cursor.execute(query)
+    prompts = cursor.fetchall()
+    cursor.close()
+    
+    # Crear DataFrame con los datos
+    df = pd.DataFrame(prompts)
+    
+    # Obtener los valores únicos de técnicas para los filtros
+    tecnicas = df['tecnica_utilizada'].unique()
+
+    tecnica_filtro = request.form.get('tecnica')
+    excluir_prompts = request.form.getlist('excluir_prompts')
+    
+    if tecnica_filtro:
+        df = df[df['tecnica_utilizada'] == tecnica_filtro]
+    
+    if excluir_prompts:
+        df = df[~df['nombre_prompt'].isin(excluir_prompts)]
+    
+    # Crear la gráfica con Plotly y asignar colores según la técnica utilizada
+    fig = px.bar(
+        df, 
+        x='nombre_prompt', 
+        y='porcentaje_acierto', 
+        color='tecnica_utilizada',
+        title='Porcentajes de Acierto de Prompts'
+    )
+    
+    # Ajustar la escala y los nombres de los ejes
+    fig.update_layout(
+        xaxis_title='Nombre del Prompt',
+        yaxis_title='Porcentaje de Acierto (%)',
+        yaxis=dict(range=[0, 1]),  # Asegurarse de que la escala del eje Y vaya de 0 a 100
+        title=dict(x=0.5)  # Centrar el título
+    )
+    
+    # Convertir la gráfica a HTML
+    graph_html = pio.to_html(fig, full_html=False)
+    
+    return render_template('historial_prompts.html', graph_html=graph_html, tecnicas=tecnicas, prompts=prompts, tecnica_filtro=tecnica_filtro, excluir_prompts=excluir_prompts)
+
+

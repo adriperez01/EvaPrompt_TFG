@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluador</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/css/media_query.css">
+  <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Barra lateral -->
+            <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                Primeros pasos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/upload_dataset">
+                               Subir Dataset
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/v1/chat">
+                               Evaluador de prompts
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <div class="container mt-5">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h2>Configuración de prompt</h2>
+                            <form id="promptForm" enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <label for="PromptName">Nombra a tu prompt:</label>
+                                    <input type="text" id="nombre" name="nombre" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="datasetEvaluar">Dataset evaluado:</label>
+                                    <select class="form-control" id="datasetEvaluar">
+                                        <option value="">Seleccionar dataset</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tecnicaUtilizada">Técnica utilizada:</label>
+                                    <select class="form-control" id="tecnicaUtilizada">
+                                        <option value="">Seleccionar técnica</option>
+                                        <option value="ZeroShot">ZeroShot</option>
+                                        <option value="FewShot">FewShot</option>
+                                        <option value="Chain-Of-Thought">Chain-Of-Thought</option>
+                                    </select>
+                                </div>
+                                <!-- Agregamos un campo oculto para identificar el envío del mensaje -->
+                                <input type="hidden" id="user-message" name="user-message">
+                                <!-- Agregamos un botón para limpiar el chat y el formulario -->
+                                <button type="button" class="btn btn-danger" onclick="clearChatAndForm()">Limpiar</button>
+                            </form>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="chat-container" id="chat-box"></div>
+                            <div class="input-container">
+                                <!-- Eliminamos el botón y manejamos el envío del formulario con JavaScript -->
+                                <div class="input-group">
+                                    <input type="text" id="user-input" class="form-control" placeholder="Escribe un mensaje..." />
+                                    <div class="input-group-append">
+                                        <!-- Llamamos a la función sendMessage() cuando se presiona Enter -->
+                                        <button class="btn btn-primary" onclick="sendChatMessage()">Enviar</button>
+                                    </div>
+                                </div>            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="accuracy-container"></div> <!-- Contenedor para mostrar la precisión de prioridad -->
+            </main>
+            
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="/static/js/mostrar_dat.js"></script>
+    <script src="/static/js/chatscript.js"></script>
+    <!-- <script src="/static/js/chatscript.js"></script> -->
+
+    <script>
+        // Función para limpiar el chat y el formulario
+        function clearChatAndForm() {
+            document.getElementById('chat-box').innerHTML = ''; // Limpiar el contenido del chat
+            document.getElementById('promptForm').reset(); // Restablecer el formulario
+            document.getElementById('accuracy-container').innerHTML = ''; // Limpiar el contenedor de accuracy
+        }
+    </script>
+
+</body>
+</html>

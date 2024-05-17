@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluador</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/css/media_query.css">
+  <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Barra lateral -->
+            <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">Primeros pasos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/upload_dataset">Subir Dataset</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/v1/chat">Evaluador de prompts</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <div class="container mt-5">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h2>Historial de Prompts</h2>
+                            <!-- Formulario de filtros -->
+                            <form method="POST" class="mb-4">
+                                <div class="form-group">
+                                    <label for="tecnica">Filtrar por Técnica Utilizada:</label>
+                                    <select class="form-control" id="tecnica" name="tecnica">
+                                        <option value="">Todas las técnicas</option>
+                                        {% for tecnica in tecnicas %}
+                                            <option value="{{ tecnica }}" {% if tecnica == tecnica_filtro %}selected{% endif %}>{{ tecnica }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="excluir_prompts">Excluir Prompts:</label>
+                                    <select multiple class="form-control" id="excluir_prompts" name="excluir_prompts">
+                                        {% for prompt in prompts %}
+                                            <option value="{{ prompt['nombre_prompt'] }}" {% if prompt['nombre_prompt'] in excluir_prompts %}selected{% endif %}>{{ prompt['nombre_prompt'] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                            </form>
+                            <!-- Contenedor de la gráfica -->
+                            <div id="accuracy-container">
+                                {{ graph_html | safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Scripts de Bootstrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
