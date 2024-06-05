@@ -134,12 +134,16 @@ def consulta_dataset(idusuario):
         cursor.close()
 
 # Definir función guardado_prompt
-def guardado_prompt(data,priority_accuracy):
+def guardado_prompt(data, priority_accuracy, precision, recall, f1_score):
     usuario = session['usuario']
     nombre = data.get('nombre')
     datasetEvaluar = data.get('datasetEvaluar')
     tecnicaUtilizada = data.get('tecnicaUtilizada')
+    prompt = data.get('message')
     accuracy = priority_accuracy
+    precision = precision
+    recall = recall
+    f1_score = f1_score
     print(accuracy)
     if not (nombre and datasetEvaluar and tecnicaUtilizada):
         return jsonify({'message': 'Faltan datos obligatorios'}), 400
@@ -148,8 +152,8 @@ def guardado_prompt(data,priority_accuracy):
     cursor = db.cursor()
 
     # Insertar el nuevo prompt en la base de datos
-    insert_query = "INSERT INTO prompts(nombre_prompt, tecnica_utilizada, nombre_dataset, porcentaje_acierto, id_usuario) VALUES (%s, %s, %s, %s, %s)"
-    values = (nombre, tecnicaUtilizada, datasetEvaluar, accuracy, usuario[0])
+    insert_query = "INSERT INTO prompts(nombre_prompt, contenido_prompt, tecnica_utilizada, nombre_dataset, porcentaje_acierto, recall, f1, precc, id_usuario) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    values = (nombre, prompt, tecnicaUtilizada, datasetEvaluar, accuracy, recall, f1_score, precision, usuario[0])
 
     try:
         cursor.execute(insert_query, values)
@@ -161,16 +165,25 @@ def guardado_prompt(data,priority_accuracy):
         return False
 
 
-def generate_openai_response(user_message):
+def generate_openai_response(user_message,tecnica_utilizada):
     # Lógica de solicitud a la API de OpenAI local
-    response = client.chat.completions.create(
-        model="local-model",  # Cambia el modelo según tus necesidades
-        messages=[
-            {"role": "system", "content":  "Eres un asistente virtual dedicado a tareas de clasificación, responde con una palabra."},
-            {"role": "user", "content": user_message}
-        ]
-    )
-    
+    if tecnica_utilizada == "Chain-Of-Thought":
+        response = client.chat.completions.create(
+            model="local-model",  # Cambia el modelo según tus necesidades
+            messages=[
+                {"role": "system", "content":  "Eres un asistente virtual dedicado a tareas de clasificación de texto. Responde en el siguiente formato: \nRazonamiento:\n1. Analiza el problema.\n2. Desglosa los pasos necesarios para llegar a la solución.\nRespuesta: \nProporciona la respuesta final. Es importante que incluyas las palabras Razonamiento: y Respuesta: antes de sus los apartados. El apartado Respuesta consta de una única palabra. "},
+                {"role": "user", "content": user_message}
+            ]
+        )
+    else: 
+        response = client.chat.completions.create(
+            model="local-model",  # Cambia el modelo según tus necesidades
+            messages=[
+                {"role": "system", "content":  "Eres un asistente virtual dedicado a tareas de clasificación de texto. Responde con una sola palabra."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+        
     return response.choices[0].message.content
 
 def obtener_datos_desde_bd(data):
@@ -210,41 +223,164 @@ def obtener_tags(data):
     finally:
         cursor.close()
 
-def basic_prompt(user_message,data):
+def basic_prompt(user_message, data):
     dicc = {}
+    tecnica_utilizada = data.get('tecnicaUtilizada')
     desired_tags = obtener_tags(data)
     print(desired_tags)
     count, score_tags = 0, 0
+    TP, TN, FP, FN = 0, 0, 0, 0  # Inicializar variables
+    filas = data.get('limiteFilas')
+    print(type(filas), filas)
     datos = obtener_datos_desde_bd(data)
-    for element in datos[0:5]:  # Aquí limitamos a 5 elementos como en tu ejemplo original
-        texto = element["columna_evaluar"]
-        prompt_pre = f"{user_message}"
-        prompt_at = prompt_pre.replace("[ATRIBUTOS]", ", ".join(desired_tags))
-        prompt = prompt_at.replace("[FRASE]", texto)
-        print(prompt)
-        response = generate_openai_response(prompt)
-        dicc[prompt] = response
-        #dicc[count] = response
-        print(dicc)
-        print(texto)
-        print("Prediction: " + response)
-        print(type(element["columna_asociada"]))
-        print(element["columna_asociada"])
-        columnaSE= re.sub(r"\s+", "", element["columna_asociada"])
+    if tecnica_utilizada == "Chain-Of-Thought":
+            for element in datos[0:int(filas)]:
+                texto = element["columna_evaluar"]
+                prompt_pre = f"{user_message}"
+                prompt_at = prompt_pre.replace("[ATRIBUTOS]", ", ".join(desired_tags))
+                prompt = prompt_at.replace("[FRASE]", texto)
+                print(prompt)
+                response = generate_openai_response(prompt,tecnica_utilizada)
+                dicc[prompt] = response
+                print(texto)
+                print("Prediction: " + response)
+                print(element["columna_asociada"])
+                columnaSE = re.sub(r"\s+", "", element["columna_asociada"])
+                # Evaluación CoT
+                reasoning, final_answer = extract_reasoning_and_answer(response)
+                print(f"Reasoning: {reasoning}")
+                print(f"Final Answer: {final_answer}")
 
-        if response == columnaSE:
-            score_tags += 1
-            print("Correct")
-            print([tag for tag in element.get("columna_asociada") if tag in desired_tags])
-        else:
-            print("Incorrect")
-            print([tag for tag in element.get("columna_asociada") if tag in desired_tags])
-        count += 1
-        print()
+                if final_answer == columnaSE:
+                    score_tags += 1
+                    TP += 1
+                    print("Correct")
+                else:
+                    FN += 1
+                    print("Incorrect")
+                count += 1 
+
+    else:
+        for element in datos[0:int(filas)]:
+            texto = element["columna_evaluar"]
+            prompt_pre = f"{user_message}"
+            prompt_at = prompt_pre.replace("[ATRIBUTOS]", ", ".join(desired_tags))
+            prompt = prompt_at.replace("[FRASE]", texto)
+            print(prompt)
+            response = generate_openai_response(prompt,tecnica_utilizada)
+            dicc[prompt] = response
+            print(texto)
+            print("Prediction: " + response)
+            print(element["columna_asociada"])
+            columnaSE = re.sub(r"\s+", "", element["columna_asociada"])
+
+            if response == columnaSE:
+                score_tags += 1
+                TP += 1
+                print("Correct")
+            else:
+                FN += 1
+                print("Incorrect")
+            
+            count += 1
+            print()
+
+        print("__________________")
 
 
-    print("__________________")
+    precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+    recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    priority_accuracy = score_tags / count     
     print(f"Priority Accuracy: {score_tags/count}")
-    priority_accuracy = score_tags / count
-    
-    return [priority_accuracy, dicc]
+    print(f"Precision: {TP / (TP + FP) if (TP + FP) > 0 else 0}")
+    print(f"Recall: {TP / (TP + FN) if (TP + FN) > 0 else 0}")
+    print(f"f1: {2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0}")
+    print(dicc)
+
+    return [priority_accuracy, precision, recall, f1_score, dicc]
+
+
+def eliminar_dataset_db(nombre_dataset, id_usuario):
+    db = get_db()
+    cursor = db.cursor()
+    try:
+
+        delete_prompts_query = "DELETE FROM prompts WHERE nombre_dataset = %s"
+        cursor.execute(delete_prompts_query, (nombre_dataset,))
+        db.commit()
+        delete_query = "DELETE FROM conjuntos_datos WHERE nombre = %s AND id_usuario_creador = %s"
+        values = (nombre_dataset, id_usuario)
+        cursor.execute(delete_query, values)
+        db.commit()
+    except mysql.connector.Error as error:
+        print(f"Error al eliminar dataset: {error}")
+        db.rollback()
+        return False
+    finally:
+        cursor.close()
+        db.close()
+    return True
+
+def obtener_datos_completos_dataset(nombre_dataset):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    select_query = "SELECT columna_evaluar,columna_asociada,id_conjunto_datos FROM conjuntos_datos WHERE nombre = %s"
+    values = (nombre_dataset,)
+    try:
+        cursor.execute(select_query, values)
+        dataset = cursor.fetchall()
+    except mysql.connector.Error as error:
+        print(f"Error al obtener datos del dataset: {error}")
+        dataset = []
+    finally:
+        cursor.close()
+    return dataset
+
+def consulta_prompt(idusuario):
+
+    # Verificar las credenciales del usuario en la base de datos
+    db = get_db()
+    cursor = db.cursor()
+    select_query = "SELECT DISTINCT nombre_prompt, contenido_prompt, tecnica_utilizada, nombre_dataset, porcentaje_acierto, recall, f1, precc FROM prompts WHERE id_usuario = %s"
+    values = (idusuario,)
+    try:
+        cursor.execute(select_query, values)
+        dataset = cursor.fetchall() 
+        return dataset
+    except mysql.connector.Error as error:
+        print(f"ERROR = {error}")
+        return jsonify({'message': f'Error al consultar en la base de datos: {error}'}), 500
+    finally:
+        cursor.close()
+
+def eliminar_prompt_db(nombre_prompt, id_usuario):
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        delete_query = "DELETE FROM prompts WHERE nombre_prompt = %s AND id_usuario = %s"
+        values = (nombre_prompt, id_usuario)
+        cursor.execute(delete_query, values)
+        db.commit()
+    except mysql.connector.Error as error:
+        print(f"Error al eliminar prompt: {error}")
+        db.rollback()
+        return False
+    finally:
+        cursor.close()
+        db.close()
+    return True
+
+# Nueva función auxiliar para extraer el razonamiento y la respuesta
+def extract_reasoning_and_answer(response):
+    # Puedes usar expresiones regulares, modelos NLP, o reglas heurísticas
+    reasoning_pattern = r"Razonamiento:(.*?)Respuesta:" 
+    match = re.search(reasoning_pattern, response, re.DOTALL)
+    reasoning = match.group(1).strip() if match else ""
+    final_answer = response.split("Respuesta:")[-1].strip()
+    return reasoning, final_answer
+
+# Nueva función para evaluar la validez del razonamiento (implementa tu lógica aquí)
+def is_valid_reasoning(reasoning):
+    # Ejemplo simple: verificar si el razonamiento tiene al menos X palabras
+    return len(reasoning.split()) > 5 

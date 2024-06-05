@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Principal</title>
+    <title>Página Principal - Manual de Usuario</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/css/media_query.css">
     <link rel="stylesheet" href="../static/css/style.css">
@@ -25,12 +25,12 @@
 
     <div class="container-fluid">
         <div class="row">
-             <!-- Barra lateral -->
-             <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
+            <!-- Barra lateral -->
+            <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link active" href="/dashboard">
+                            <a class="nav-link" href="/dashboard">
                                 Primeros pasos
                             </a>
                         </li>
@@ -40,28 +40,89 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/v1/chat">
-                               Evaluador de prompts
+                            <a class="nav-link active" href="/redactor_prompts">
+                               Redactor de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/v1/chat">
+                               Evaluador de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_datasets">Gestor de Datasets</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_prompts">Historial de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/estadisticas">
+                               Estadísticas
                             </a>
                         </li>
                     </ul>
                 </div>
             </nav>
+
             <!-- Contenido principal -->
             <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Página Principal</h1>
+                    <h1 class="h2">Primeros pasos</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group mr-2">
                             <button class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/upload_dataset'">Subir Dataset</button>
-
                         </div>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <!-- Aquí puedes agregar contenido principal -->
-                    <p>Bienvenido a la página principal. Aquí puedes acceder a toda la información.</p>
+                    <section>
+                        <p>Para comenzar, dirígete a la sección de "Primeros pasos" en el menú lateral. Aquí encontrarás información básica sobre cómo navegar por la aplicación.</p>
+                    </section>
+                    
+                    <!-- Subir Dataset -->
+                    <section>
+                        <h2>Subir Dataset</h2>
+                        <p>Para subir un dataset, sigue estos pasos:</p>
+                        <ol>
+                            <li>Haz clic en "Subir Dataset" en el menú lateral.</li>
+                            <li>En la página de subida, selecciona el archivo que deseas subir en formato .CSV.</li>
+                            <li>Completa cualquier información adicional requerida y haz clic en el botón "Subir".</li>
+                        </ol>
+                    </section>
+                    
+                    <!-- Evaluador de Prompts -->
+                    <section>
+                        <h2>Evaluador de Prompts</h2>
+                        <p>La herramienta de evaluador de prompts te permite probar diferentes prompts y evaluar sus respuestas. Para utilizarla:</p>
+                        <ol>
+                            <li>Selecciona "Evaluador de prompts" en el menú lateral.</li>
+                            <li>Ingresa tu prompt en el campo de texto proporcionado.</li>
+                            <li>Tras rellenar la información requerida, envía el mensaje y comenzará la evaluación.</li>
+                            <li>Podrás acceder a la evaluación siempre que lo desees, en el apartado "Historial de Prompts" encontrarás el prompt junto a sus resultados.</li>
+                        </ol>
+                    </section>
+
+                    <!-- Historial de Prompts -->
+                    <section>
+                        <h2>Historial de Prompts</h2>
+                        <p>Para ver el historial de todos los prompts evaluados:</p>
+                        <ol>
+                            <li>Haz clic en "Historial de prompts" en el menú lateral.</li>
+                            <li>Se mostrará una lista de todos los prompts anteriores junto con sus respuestas.</li>
+                        </ol>
+                    </section>
+
+                    <!-- Gestionar Datasets -->
+                    <section>
+                        <h2>Gestionar Datasets</h2>
+                        <p>Para gestionar tus datasets subidos:</p>
+                        <ol>
+                            <li>Selecciona "Gestionar Datasets" en el menú lateral.</li>
+                            <li>Verás una lista de todos los datasets que has subido.</li>
+                            <li>Para eliminar un dataset, haz clic en el botón "Eliminar" junto al dataset correspondiente.</li>
+                        </ol>
+                    </section>
                 </div>
             </main>
         </div>

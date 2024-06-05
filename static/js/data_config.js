@@ -77,17 +77,13 @@ function cargarColumnas(columnas) {
             url: '/upload_dataset',
             type: 'POST',
             data: formData,
-            processData: false,  // Evitar que jQuery procese los datos
-            contentType: false,  // Evitar que jQuery establezca automáticamente el tipo de contenido
+            processData: false,
+            contentType: false,
             success: function(response) {
-                // Manejar la respuesta del servidor
-                console.log(response);
-                // Llamar a la función para actualizar la tabla de previsualización con los datos del dataset
-                actualizarTabla(response.dataset, columnaEvaluar, columnaAsociada);
+                toastr.success('Dataset subido correctamente.');
             },
-            error: function(xhr, status, error) {
-                // Manejar errores de la solicitud
-                console.error(error);
+            error: function(error) {
+                toastr.error('Error al subir el dataset. Por favor, intenta nuevamente..');
             }
         });
     });

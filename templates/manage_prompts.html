@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de prompts</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/media_query.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                Primeros pasos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/upload_dataset">
+                               Subir Dataset
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/redactor_prompts">
+                               Redactor de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/v1/chat">
+                               Evaluador de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_datasets">Gestor de Datasets</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_prompts">Historial de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/estadisticas">
+                               Estadísticas
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Historial de prompts</h1>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Nombre del prompt</th>
+                                <th>Dataset</th>
+                                <th>Técnica</th>
+                                <th>Contenido</th>
+                                <th>Accuracy</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataset-table">
+                            {% for prompt in prompts %}
+                            <tr id="prompt-{{ prompt[0] }}">
+                                <td>{{ prompt[0] }}</td>  <!-- Nombre del prompt -->
+                                <td>{{ prompt[3] }}</td> 
+                                <td>{{ prompt[2] }}</td> 
+                                <td><button class="btn btn-sm btn-outline-secondary" onclick="visualizaprompt('{{ prompt[1] }}')">Visualizar</button></td>  <!-- Botón de visualización -->
+                                <td>{{ prompt[4] }}</td>  <!-- Accuracy -->
+                                <td>{{ prompt[7] }}</td>  <!-- Precision -->
+                                <td>{{ prompt[5] }}</td>  <!-- Recall -->
+                                <td>{{ prompt[6] }}</td>  <!-- F1 -->
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" onclick="renombrarPrompt('{{ prompt[0] }}')">Renombrar</button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarPrompt('{{ prompt[0] }}')">Eliminar</button>  <!-- Botón de eliminación -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="renombrar-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="renombrarModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="renombrarModalLabel">Renombrar Prompt</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <label for="nuevo-nombre">Nuevo Nombre:</label>
+                                <input type="text" class="form-control" id="nuevo-nombre" placeholder="Ingrese el nuevo nombre del prompt">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                <button type="button" class="btn btn-primary" onclick="renombrarPromptConfirmado()">Guardar Cambios</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="preview-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="previewModalLabel">Contenido del Prompt</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="prompt-content">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function visualizaprompt(contenido) {
+            console.log(contenido);
+            // Escapar caracteres especiales, como saltos de línea, utilizando JSON.stringify
+            const escapedContent = JSON.stringify(contenido);
+            // Mostrar el contenido escapado en el modal
+            $('#prompt-content').text(escapedContent);
+            $('#preview-modal').modal('show');
+        }
+
+        function eliminarPrompt(nombre) {
+            if (confirm('¿Estás seguro de que deseas eliminar este prompt?')) {
+                $.ajax({
+                    url: '/eliminar_prompt',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ nombre: nombre }),
+                    success: function(response) {
+                        alert(response.message);
+                        $('#prompt-' + nombre).remove();  // Eliminar la fila de la tabla
+                    },
+                    error: function(error) {
+                        alert('Error al eliminar el prompt');
+                    }
+                });
+            }
+        }
+        function renombrarPrompt(nombre) {
+            $('#nuevo-nombre').val(nombre); // Establecer el valor actual del prompt en el campo de entrada
+            $('#nuevo-nombre').attr('data-antiguo-nombre', nombre); // Almacenar el nombre original
+            $('#renombrar-modal').modal('show');
+        }
+
+        function renombrarPromptConfirmado() {
+            let nuevoNombre = $('#nuevo-nombre').val();
+            let antiguoNombre = $('#nuevo-nombre').attr('data-antiguo-nombre');
+
+            $.ajax({
+                url: '/renombrar_prompt',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ nuevo_nombre: nuevoNombre, antiguo_nombre: antiguoNombre }),
+                success: function(response) {
+                    alert(response.message);
+                    $('#renombrar-modal').modal('hide');
+                    location.reload(); // Recargar la página después de la actualización
+                },
+                error: function(error) {
+                    alert('Error al renombrar el prompt');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

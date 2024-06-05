@@ -39,8 +39,24 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link active" href="/redactor_prompts">
+                               Redactor de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link active" href="/v1/chat">
-                               Evaluador de prompts
+                               Evaluador de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_datasets">Gestor de Datasets</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_prompts">Historial de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/estadisticas">
+                               Estadísticas
                             </a>
                         </li>
                     </ul>
@@ -71,6 +87,11 @@
                                         <option value="Chain-Of-Thought">Chain-Of-Thought</option>
                                     </select>
                                 </div>
+                                <div class="form-group">
+                                    <label for="limite-filas">Número de filas a evaluar:</label>
+                                    <input type="number" id="limite-filas" name="limite-filas" min="-1" class="form-control" required>
+                                    <small class="form-text text-muted">Para evaluar el dataset completo utiliza el valor -1.</small>
+                                </div>
                                 <!-- Agregamos un campo oculto para identificar el envío del mensaje -->
                                 <input type="hidden" id="user-message" name="user-message">
                                 <!-- Agregamos un botón para limpiar el chat y el formulario -->
@@ -79,10 +100,11 @@
                         </div>
                         <div class="col-md-8">
                             <div class="chat-container" id="chat-box"></div>
+                            <div id="error-message" style="color: red; display: none;"></div>
                             <div class="input-container">
                                 <!-- Eliminamos el botón y manejamos el envío del formulario con JavaScript -->
                                 <div class="input-group">
-                                    <input type="text" id="user-input" class="form-control" placeholder="Escribe un mensaje..." />
+                                    <textarea id="user-input" class="form-control" placeholder="Escribe un mensaje..." rows="4"></textarea>
                                     <div class="input-group-append">
                                         <!-- Llamamos a la función sendMessage() cuando se presiona Enter -->
                                         <button class="btn btn-primary" onclick="sendChatMessage()">Enviar</button>
@@ -92,7 +114,27 @@
                         </div>
                     </div>
                 </div>
-                <div id="accuracy-container"></div> <!-- Contenedor para mostrar la precisión de prioridad -->
+    <div class="container">
+        <h1>Resultados de la Evaluación</h1>
+        <div class="stats-container">
+            <div class="stat-box">
+                <h2>Accuracy</h2>
+                <p id="priority_accuracy"></p>
+            </div>
+            <div class="stat-box">
+                <h2>Precision</h2>
+                <p id="precision"></p>
+            </div>
+            <div class="stat-box">
+                <h2>Recall</h2>
+                <p id="recall"></p>
+            </div>
+            <div class="stat-box">
+                <h2>F1 Score</h2>
+                <p id="f1_score"></p>
+            </div>
+        </div>
+    </div>
             </main>
             
         </div>
@@ -104,14 +146,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="/static/js/mostrar_dat.js"></script>
     <script src="/static/js/chatscript.js"></script>
-    <!-- <script src="/static/js/chatscript.js"></script> -->
-
     <script>
         // Función para limpiar el chat y el formulario
         function clearChatAndForm() {
             document.getElementById('chat-box').innerHTML = ''; // Limpiar el contenido del chat
             document.getElementById('promptForm').reset(); // Restablecer el formulario
-            document.getElementById('accuracy-container').innerHTML = ''; // Limpiar el contenedor de accuracy
+            document.getElementById('stats-container').innerHTML = ''; // Limpiar el contenedor de accuracy
         }
     </script>
 

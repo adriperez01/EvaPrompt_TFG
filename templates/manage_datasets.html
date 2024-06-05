@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Datasets</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/media_query.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/dashboard">EvaPrompt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-md-block bg-light sidebar vh-100">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">Primeros pasos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/upload_dataset">Subir Dataset</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/redactor_prompts">Redactor de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/v1/chat">Evaluador de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_datasets">Gestor de Datasets</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_prompts">Historial de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/estadisticas">Estadísticas</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Gestor de Datasets</h1>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Dataset</th>
+                                <th>Contenido</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataset-table">
+                            {% for dataset in datasets %}
+                            <tr>
+                                <td>{{ dataset }}</td>
+                                <td><button class="btn btn-sm btn-outline-secondary" onclick="previsualizarDataset('{{ dataset }}')">Previsualizar</button></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarDataset('{{ dataset }}')">Eliminar</button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="renombrarDataset('{{ dataset }}')">Renombrar</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de renombrar -->
+    <div id="renombrar-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="renombrarModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renombrarModalLabel">Renombrar Dataset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="nuevo-nombre">Nuevo Nombre:</label>
+                    <input type="text" class="form-control" id="nuevo-nombre" placeholder="Ingrese el nuevo nombre del dataset">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="renombrarDatasetConfirmado()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de previsualización -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Previsualización del Dataset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead id="dataset-preview-header"></thead>
+                        <tbody id="dataset-preview-body"></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function previsualizarDataset(nombre) {
+            $.ajax({
+                url: '/previsualizar_dataset',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ nombre: nombre }),
+                success: function(data) {
+                    $('#dataset-preview-header').empty();
+                    $('#dataset-preview-body').empty();
+                    console.log(data);
+                    if (data.length > 0) {
+                        // Añadir encabezados
+                        let headers = Object.keys(data[0]);
+                        headers.forEach(header => {
+                            // Excluir el encabezado 'id_conjunto_datos'
+                            if (header !== 'id_conjunto_datos') {
+                                $('#dataset-preview-header').append('<th>' + header + '</th>');
+                            }
+                        });
+
+                        // Añadir filas
+                        data.forEach(row => {
+                            let rowHtml = '<tr>';
+                            // Iterar solo sobre los dos primeros elementos de cada fila
+                            Object.values(row).slice(0, 2).forEach(value => {
+                                rowHtml += '<td>' + value + '</td>';
+                            });
+                            // Agregar el botón de eliminación
+                            rowHtml += '<td><button class="btn btn-sm btn-outline-danger" onclick="eliminarFila(\'' + nombre + '\', ' + row.id_conjunto_datos + ')">Eliminar</button></td>';
+                            rowHtml += '</tr>';
+                            $('#dataset-preview-body').append(rowHtml);
+                        });
+                    }
+
+                    $('#previewModal').modal('show');
+                },
+                error: function(error) {
+                    alert('Error al previsualizar el dataset');
+                }
+            });
+        }
+
+
+        function eliminarDataset(nombre) {
+            if (confirm('¿Estás seguro de que deseas eliminar este dataset? Esto también eliminará todos los prompts relacionados.')) {
+                $.ajax({
+                    url: '/eliminar_dataset',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ nombre: nombre }),
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function(error) {
+                        alert('Error al eliminar el dataset');
+                    }
+                });
+            }
+        }
+
+        function eliminarFila(nombre, filaId) {
+            if (confirm('¿Estás seguro de que deseas eliminar esta linea del dataset? Esto también eliminará todos los prompts relacionados.')) {
+                console.log(filaId)
+                $.ajax({
+                    url: '/eliminar_fila',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ nombre: nombre, fila_id: filaId }),
+                    success: function(response) {
+                        alert(response.message);
+                        previsualizarDataset(nombre); // Recargar la previsualización del dataset
+                    },
+                    error: function(error) {
+                        alert('Error al eliminar la fila');
+                    }
+                });
+            }
+        }
+
+        function renombrarDataset(nombre) {
+            $('#nuevo-nombre').val(nombre); // Establecer el valor actual del prompt en el campo de entrada
+            $('#nuevo-nombre').attr('data-antiguo-nombre', nombre); // Almacenar el nombre original
+            $('#renombrar-modal').modal('show');
+        }
+
+        function renombrarDatasetConfirmado() {
+            let nuevoNombre = $('#nuevo-nombre').val();
+            let antiguoNombre = $('#nuevo-nombre').attr('data-antiguo-nombre');
+
+            $.ajax({
+                url: '/renombrar_dataset',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ nuevo_nombre: nuevoNombre, antiguo_nombre: antiguoNombre }),
+                success: function(response) {
+                    alert(response.message);
+                    $('#renombrar-modal').modal('hide');
+                    location.reload(); // Recargar la página después de la actualización
+                },
+                error: function(error) {
+                    alert('Error al renombrar el dataset');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

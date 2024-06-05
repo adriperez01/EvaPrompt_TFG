@@ -22,9 +22,13 @@ CREATE INDEX idx_nombre ON conjuntos_datos(nombre);
 CREATE TABLE prompts (
   id_prompt INT PRIMARY KEY AUTO_INCREMENT,
   nombre_prompt VARCHAR(255) NOT NULL,
+  contenido_prompt TEXT NOT NULL,
   tecnica_utilizada VARCHAR(255) NOT NULL,
   nombre_dataset VARCHAR(255) NOT NULL,
   porcentaje_acierto FLOAT NOT NULL,
+  recall FLOAT NOT NULL,
+  f1 FLOAT NOT NULL,
+  precc FLOAT NOT NULL,
   id_usuario INT NOT NULL,
   FOREIGN KEY (nombre_dataset) REFERENCES conjuntos_datos(nombre), 
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)

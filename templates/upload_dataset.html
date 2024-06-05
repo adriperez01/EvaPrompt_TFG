@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir Dataset</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="../static/css/media_query.css">
     <link rel="stylesheet" href="../static/css/style.css">
 </head>
@@ -34,13 +35,29 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="/upload_dataset">
+                            <a class="nav-link" href="/upload_dataset">
                                Subir Dataset
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/v1/chat">
-                               Evaluador de prompts
+                            <a class="nav-link active" href="/redactor_prompts">
+                               Redactor de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/v1/chat">
+                               Evaluador de Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_datasets">Gestor de Datasets</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_prompts">Historial de Prompts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/estadisticas">
+                               Estadísticas
                             </a>
                         </li>
                     </ul>
@@ -72,23 +89,43 @@
                             </select>
                         </div>
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">Subir Dataset</button>
+                            <button type="button" class="btn btn-primary" id="previewButton">Previsualizar Dataset</button>
+                            <button type="submit" class="btn btn-success">Subir Dataset</button>
                         </div>
                     </form>
-                    <div id="datasetPreview">
-                        <h3>Previsualización del Dataset</h3>
-                        <table class="table table-bordered">
-                            <thead></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    
                 </div>
             </main>
         </div>
     </div>
+
+    <!-- Modal para previsualización -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Previsualización del Dataset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="/static/js/mostrar_dataset.js"></script>
-    <script src="/static/js/data_config.js" ></script>
+    <script src="/static/js/data_config.js"></script>
 </body>
 </html>
