@@ -337,34 +337,54 @@ def renombrar_prompt():
             cursor.close()
     else:
         return redirect('/')
-    
 @visual_bp.route('/renombrar_dataset', methods=['POST'])
 def renombrar_dataset():
     if 'usuario' in session:
         usuario = session['usuario']
         data = request.json
         nuevo_nombre = data['nuevo_nombre']
-        print(nuevo_nombre)
         antiguo_nombre = data['antiguo_nombre']
-        print(antiguo_nombre)
-        print(usuario[0])
-        print(type(nuevo_nombre))
-        print(type(antiguo_nombre))
-        # Aquí realizas la actualización en la base de datos
+
         db = get_db()
         cursor = db.cursor()
+
         try:
-            update_query = "UPDATE conjuntos_datos SET nombre = %s WHERE nombre = %s AND id_usuario_creador = %s"
-            cursor.execute(update_query, (nuevo_nombre, antiguo_nombre, usuario[0]))
+            # Deshabilitar temporalmente las verificaciones de claves foráneas
+            cursor.execute("SET foreign_key_checks = 0")
+
+            # Actualizar la tabla hija (prompts)
+            update_query_prompts = """
+                UPDATE prompts 
+                SET nombre_dataset = %s 
+                WHERE nombre_dataset = %s AND id_usuario = %s
+            """
+            cursor.execute(update_query_prompts, (nuevo_nombre, antiguo_nombre, usuario[0]))
+
+            # Actualizar la tabla padre (conjuntos_datos)
+            update_query_conjuntos_datos = """
+                UPDATE conjuntos_datos 
+                SET nombre = %s 
+                WHERE nombre = %s AND id_usuario_creador = %s
+            """
+            cursor.execute(update_query_conjuntos_datos, (nuevo_nombre, antiguo_nombre, usuario[0]))
+
+            # Confirmar transacción
             db.commit()
-            return jsonify({'message': 'El dataset ha sido renombrado exitosamente'})
+
         except mysql.connector.Error as error:
+            # Revertir transacción en caso de error
             db.rollback()
             return jsonify({'message': f'Error al renombrar el dataset en la base de datos: {error}'}), 500
+        
         finally:
+            # Volver a habilitar las verificaciones de claves foráneas
+            cursor.execute("SET foreign_key_checks = 1")
             cursor.close()
+
+        return jsonify({'message': 'El dataset ha sido renombrado exitosamente'})
     else:
         return redirect('/')
+
     
 @visual_bp.route('/eliminar_fila', methods=['POST'])
 def eliminar_fila():

@@ -5,6 +5,7 @@ import re
 from openai import OpenAI
 from confiDB import *
 import secrets
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
 
 client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
@@ -222,83 +223,66 @@ def obtener_tags(data):
         return jsonify({'message': f'Error al consultar en la base de datos: {error}'}), 500
     finally:
         cursor.close()
+import re
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
 def basic_prompt(user_message, data):
     dicc = {}
     tecnica_utilizada = data.get('tecnicaUtilizada')
     desired_tags = obtener_tags(data)
     print(desired_tags)
-    count, score_tags = 0, 0
-    TP, TN, FP, FN = 0, 0, 0, 0  # Inicializar variables
+    
+    # Inicialización de contadores
     filas = data.get('limiteFilas')
     print(type(filas), filas)
+    
+    # Obtener los datos desde la base de datos
     datos = obtener_datos_desde_bd(data)
-    if tecnica_utilizada == "Chain-Of-Thought":
-            for element in datos[0:int(filas)]:
-                texto = element["columna_evaluar"]
-                prompt_pre = f"{user_message}"
-                prompt_at = prompt_pre.replace("[ATRIBUTOS]", ", ".join(desired_tags))
-                prompt = prompt_at.replace("[FRASE]", texto)
-                print(prompt)
-                response = generate_openai_response(prompt,tecnica_utilizada)
-                dicc[prompt] = response
-                print(texto)
-                print("Prediction: " + response)
-                print(element["columna_asociada"])
-                columnaSE = re.sub(r"\s+", "", element["columna_asociada"])
-                # Evaluación CoT
-                reasoning, final_answer = extract_reasoning_and_answer(response)
-                print(f"Reasoning: {reasoning}")
-                print(f"Final Answer: {final_answer}")
-
-                if final_answer == columnaSE:
-                    score_tags += 1
-                    TP += 1
-                    print("Correct")
-                else:
-                    FN += 1
-                    print("Incorrect")
-                count += 1 
-
-    else:
-        for element in datos[0:int(filas)]:
-            texto = element["columna_evaluar"]
-            prompt_pre = f"{user_message}"
-            prompt_at = prompt_pre.replace("[ATRIBUTOS]", ", ".join(desired_tags))
-            prompt = prompt_at.replace("[FRASE]", texto)
-            print(prompt)
-            response = generate_openai_response(prompt,tecnica_utilizada)
-            dicc[prompt] = response
-            print(texto)
-            print("Prediction: " + response)
-            print(element["columna_asociada"])
-            columnaSE = re.sub(r"\s+", "", element["columna_asociada"])
-
-            if response == columnaSE:
-                score_tags += 1
-                TP += 1
-                print("Correct")
-            else:
-                FN += 1
-                print("Incorrect")
-            
-            count += 1
-            print()
-
-        print("__________________")
-
-
-    precision = TP / (TP + FP) if (TP + FP) > 0 else 0
-    recall = TP / (TP + FN) if (TP + FN) > 0 else 0
-    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-    priority_accuracy = score_tags / count     
-    print(f"Priority Accuracy: {score_tags/count}")
-    print(f"Precision: {TP / (TP + FP) if (TP + FP) > 0 else 0}")
-    print(f"Recall: {TP / (TP + FN) if (TP + FN) > 0 else 0}")
-    print(f"f1: {2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0}")
+    
+    y_true = []
+    y_pred = []
+    
+    for element in datos[0:int(filas)]:
+        texto = element["columna_evaluar"]
+        prompt_pre = f"{user_message}"
+        prompt_at = prompt_pre.replace("[ATRIBUTOS]", ", ".join(desired_tags))
+        prompt = prompt_at.replace("[FRASE]", texto)
+        print(prompt)
+        
+        # Generar la respuesta usando OpenAI
+        response = generate_openai_response(prompt, tecnica_utilizada)
+        dicc[prompt] = response
+        print(texto)
+        print("Prediction: " + response)
+        print(element["columna_asociada"])
+        columnaSE = re.sub(r"\s+", "", element["columna_asociada"])
+        
+        # Evaluación de la respuesta
+        if tecnica_utilizada == "Chain-Of-Thought":
+            reasoning, final_answer = extract_reasoning_and_answer(response)
+            print(f"Reasoning: {reasoning}")
+            print(f"Final Answer: {final_answer}")
+            prediction = final_answer
+        else:
+            prediction = response
+        
+        y_true.append(columnaSE)
+        y_pred.append(prediction)
+    
+    # Cálculo de métricas
+    precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
+    recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
+    f1 = f1_score(y_true, y_pred, average='weighted', zero_division=1)
+    accuracy = accuracy_score(y_true, y_pred)
+    
+    # Imprimir métricas
+    print(f"Priority Accuracy: {accuracy}")
+    print(f"Precision: {precision}")
+    print(f"Recall: {recall}")
+    print(f"F1: {f1}")
     print(dicc)
 
-    return [priority_accuracy, precision, recall, f1_score, dicc]
+    return [accuracy, precision, recall, f1, dicc]
 
 
 def eliminar_dataset_db(nombre_dataset, id_usuario):
