@@ -73,7 +73,14 @@
             <h1 class="h2">Redactor de Prompts</h1>
         </div>
         <div class="table-responsive">
-            <section>
+              <p>Aquí cuentas con información sobre las técnicas de prompting junto con ejemplos de estas, podrás escribir tus propios prompts y copiarlos en tu portapapeles:</p>
+              <ol>
+                  <li>Utiliza la información proporcionada para redactar tu prompt en el campo de texto.</li>
+                  <li>Utiliza la etiqueta [ATRIBUTO] para poner la lista de atributos de tu dataset en el sitio que desees del prompt.</li>
+                  <li>Utiliza la etiqueta [FRASE] para poner la frase a clasificar de tu dataset en el sitio que desees del prompt.</li>
+                  <li>Presiona el botón "Copiar" para llevártelo al evaluador.</li>
+                  <li>Presiona el botón "Limpiar" para vaciar los campos.</li>
+              </ol>
                 <h4>Zero-Shot Prompting</h4>
                 <p>En esta técnica, el modelo no recibe ejemplos previos. El prompt debe ser claro, conciso y contener toda la información necesaria para que el modelo genere la respuesta correcta.</p>
                 <code>"Clasifica el siguiente texto como positivo, negativo o neutral: "La comida estuvo deliciosa y el servicio fue excelente". </code>
@@ -138,12 +145,12 @@
     </div>
   </div>
 
-  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-  <!-- Script para copiar el prompt de FewShot -->
+
   <script>
     function copyFewShotPrompt() {
       var examples = document.getElementById('fewShotExamples').value;

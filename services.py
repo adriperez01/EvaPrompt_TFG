@@ -44,7 +44,6 @@ def registro_usuario(data):
     db = get_db()
     cursor = db.cursor()
 
-    # Verificar si el correo electrónico ya está en uso
     check_query = "SELECT * FROM usuarios WHERE correo_electronico = %s"
     cursor.execute(check_query, (correo,))
     existing_user = cursor.fetchone()
@@ -84,12 +83,6 @@ def parse_csv(csv_content):
         row_dict = {header: value for header, value in zip(headers, row)}
         dataset.append(row_dict)
     return dataset
-
-import datetime
-
-import datetime
-import mysql.connector
-from flask import session
 
 def insert_datasetbd(nombre, columnaEvaluar, columnaAsociada, dataset):
     usuario = session['usuario']
@@ -134,7 +127,7 @@ def consulta_dataset(idusuario):
     finally:
         cursor.close()
 
-# Definir función guardado_prompt
+
 def guardado_prompt(data, priority_accuracy, precision, recall, f1_score):
     usuario = session['usuario']
     nombre = data.get('nombre')
@@ -146,26 +139,32 @@ def guardado_prompt(data, priority_accuracy, precision, recall, f1_score):
     recall = recall
     f1_score = f1_score
     print(accuracy)
+
     if not (nombre and datasetEvaluar and tecnicaUtilizada):
         return jsonify({'message': 'Faltan datos obligatorios'}), 400
 
     db = get_db()
     cursor = db.cursor()
 
-    # Insertar el nuevo prompt en la base de datos
-    insert_query = "INSERT INTO prompts(nombre_prompt, contenido_prompt, tecnica_utilizada, nombre_dataset, porcentaje_acierto, recall, f1, precc, id_usuario) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    values = (nombre, prompt, tecnicaUtilizada, datasetEvaluar, accuracy, recall, f1_score, precision, usuario[0])
-
     try:
+        # Insertar el prompt en la tabla prompts
+        insert_query = """
+            INSERT INTO prompts(nombre_prompt, contenido_prompt, tecnica_utilizada, nombre_dataset, porcentaje_acierto, recall, f1, precc, id_usuario) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        values = (nombre, prompt, tecnicaUtilizada, datasetEvaluar, accuracy, recall, f1_score, precision, usuario[0])
         cursor.execute(insert_query, values)
         db.commit()
+        # Cerrar cursor y conexión
         cursor.close()
+        db.close()
+
         return True
+
     except mysql.connector.Error as error:
         print(error)
         return False
-
-
+    
 def generate_openai_response(user_message,tecnica_utilizada):
     # Lógica de solicitud a la API de OpenAI local
     if tecnica_utilizada == "Chain-Of-Thought":
@@ -223,8 +222,7 @@ def obtener_tags(data):
         return jsonify({'message': f'Error al consultar en la base de datos: {error}'}), 500
     finally:
         cursor.close()
-import re
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+
 
 def basic_prompt(user_message, data):
     dicc = {}
@@ -249,7 +247,7 @@ def basic_prompt(user_message, data):
         prompt = prompt_at.replace("[FRASE]", texto)
         print(prompt)
         
-        # Generar la respuesta usando OpenAI
+        # appr la respuesta usando OpenAI
         response = generate_openai_response(prompt, tecnica_utilizada)
         dicc[prompt] = response
         print(texto)
@@ -363,8 +361,3 @@ def extract_reasoning_and_answer(response):
     reasoning = match.group(1).strip() if match else ""
     final_answer = response.split("Respuesta:")[-1].strip()
     return reasoning, final_answer
-
-# Nueva función para evaluar la validez del razonamiento (implementa tu lógica aquí)
-def is_valid_reasoning(reasoning):
-    # Ejemplo simple: verificar si el razonamiento tiene al menos X palabras
-    return len(reasoning.split()) > 5 

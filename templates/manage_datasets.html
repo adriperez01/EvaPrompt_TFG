@@ -84,7 +84,7 @@
         </div>
     </div>
 
-    <!-- Modal de renombrar -->
+    
     <div id="renombrar-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="renombrarModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -106,7 +106,7 @@
         </div>
     </div>
 
-    <!-- Modal de previsualización -->
+    
     <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -144,23 +144,23 @@
                     $('#dataset-preview-body').empty();
                     console.log(data);
                     if (data.length > 0) {
-                        // Añadir encabezados
+                        
                         let headers = Object.keys(data[0]);
                         headers.forEach(header => {
-                            // Excluir el encabezado 'id_conjunto_datos'
+                            
                             if (header !== 'id_conjunto_datos') {
                                 $('#dataset-preview-header').append('<th>' + header + '</th>');
                             }
                         });
 
-                        // Añadir filas
+                        
                         data.forEach(row => {
                             let rowHtml = '<tr>';
-                            // Iterar solo sobre los dos primeros elementos de cada fila
+                            
                             Object.values(row).slice(0, 2).forEach(value => {
                                 rowHtml += '<td>' + value + '</td>';
                             });
-                            // Agregar el botón de eliminación
+                            
                             rowHtml += '<td><button class="btn btn-sm btn-outline-danger" onclick="eliminarFila(\'' + nombre + '\', ' + row.id_conjunto_datos + ')">Eliminar</button></td>';
                             rowHtml += '</tr>';
                             $('#dataset-preview-body').append(rowHtml);
@@ -180,7 +180,7 @@
             if (confirm('¿Estás seguro de que deseas eliminar este dataset? Esto también eliminará todos los prompts relacionados.')) {
                 $.ajax({
                     url: '/eliminar_dataset',
-                    type: 'POST',
+                    type: 'DELETE',
                     contentType: 'application/json',
                     data: JSON.stringify({ nombre: nombre }),
                     success: function(response) {
@@ -199,12 +199,12 @@
                 console.log(filaId)
                 $.ajax({
                     url: '/eliminar_fila',
-                    type: 'POST',
+                    type: 'DELETE',
                     contentType: 'application/json',
                     data: JSON.stringify({ nombre: nombre, fila_id: filaId }),
                     success: function(response) {
                         alert(response.message);
-                        previsualizarDataset(nombre); // Recargar la previsualización del dataset
+                        previsualizarDataset(nombre); 
                     },
                     error: function(error) {
                         alert('Error al eliminar la fila');
@@ -214,8 +214,8 @@
         }
 
         function renombrarDataset(nombre) {
-            $('#nuevo-nombre').val(nombre); // Establecer el valor actual del prompt en el campo de entrada
-            $('#nuevo-nombre').attr('data-antiguo-nombre', nombre); // Almacenar el nombre original
+            $('#nuevo-nombre').val(nombre); 
+            $('#nuevo-nombre').attr('data-antiguo-nombre', nombre); 
             $('#renombrar-modal').modal('show');
         }
 
@@ -225,13 +225,13 @@
 
             $.ajax({
                 url: '/renombrar_dataset',
-                type: 'POST',
+                type: 'PATCH',
                 contentType: 'application/json',
                 data: JSON.stringify({ nuevo_nombre: nuevoNombre, antiguo_nombre: antiguoNombre }),
                 success: function(response) {
                     alert(response.message);
                     $('#renombrar-modal').modal('hide');
-                    location.reload(); // Recargar la página después de la actualización
+                    location.reload(); 
                 },
                 error: function(error) {
                     alert('Error al renombrar el dataset');

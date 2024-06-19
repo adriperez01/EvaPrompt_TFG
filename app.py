@@ -21,28 +21,6 @@ with app.app_context():
     dir = os.path.realpath(os.getcwd())
     execute_sql_file(dir + os.sep + "schema.sql")
 
-@app.route('/obtener_dataset', methods=['GET'])
-def obtener_dataset():
-    usuario = session['usuario']
-    print(usuario[0])
-    id_usuario = usuario[0]  # Aquí deberías proporcionar el ID de usuario adecuado
-    nombres = consulta_dataset(id_usuario)
-    
-    # Crear la respuesta JSON
-    response = {'nombres': nombres}
-    return jsonify(response)
-
-@app.route('/guardar_prompt', methods=['POST'])
-def guardar_prompt():
-    data = request.json
-    print("Datos recibidos:", data)  # Imprimir los datos recibidos del formulario
-
-    if guardado_prompt(data):
-        print("Prompt guardado correctamente")
-        return jsonify({'message': 'Prompt guardado correctamente'}), 200
-    else:
-        print("Error al guardar el prompt")
-        return jsonify({'message': 'Error al guardar el prompt'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

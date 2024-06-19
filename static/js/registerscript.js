@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => {
             if (response.ok) {
                 window.location.href = '/login';
-            } else if (response.status === 409) { // Error de correo ya registrado
+            } else if (response.status === 409) { 
                 displayError("El correo electrónico ya está registrado");
             } else {
                 alert("Error en el registro. Por favor, inténtalo de nuevo más tarde: " + response.statusText);

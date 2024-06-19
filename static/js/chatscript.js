@@ -83,13 +83,13 @@ document.addEventListener('DOMContentLoaded', function () {
         userInput.value = '';
     };
 
-    // Manejar el envío del formulario con JavaScript
+    
     document.getElementById('promptForm').addEventListener('submit', function(event) {
         event.preventDefault();
         sendChatMessage();
     });
 
-    // Manejar el envío del formulario al presionar Enter en el campo de entrada
+    
     userInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();

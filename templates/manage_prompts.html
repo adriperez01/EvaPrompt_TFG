@@ -85,14 +85,14 @@
                         <tbody id="dataset-table">
                             {% for prompt in prompts %}
                             <tr id="prompt-{{ prompt[0] }}">
-                                <td>{{ prompt[0] }}</td>  <!-- Nombre del prompt -->
+                                <td>{{ prompt[0] }}</td>  
                                 <td>{{ prompt[3] }}</td> 
                                 <td>{{ prompt[2] }}</td> 
                                 <td><button class="btn btn-sm btn-outline-secondary" onclick="visualizaprompt('{{ prompt[1] }}')">Visualizar</button></td>  <!-- Botón de visualización -->
-                                <td>{{ prompt[4] }}</td>  <!-- Accuracy -->
-                                <td>{{ prompt[7] }}</td>  <!-- Precision -->
-                                <td>{{ prompt[5] }}</td>  <!-- Recall -->
-                                <td>{{ prompt[6] }}</td>  <!-- F1 -->
+                                <td>{{ prompt[4] }}</td>  
+                                <td>{{ prompt[7] }}</td>  
+                                <td>{{ prompt[5] }}</td>  
+                                <td>{{ prompt[6] }}</td>  
                                 <td>
                                     <button class="btn btn-sm btn-outline-info" onclick="renombrarPrompt('{{ prompt[0] }}')">Renombrar</button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="eliminarPrompt('{{ prompt[0] }}')">Eliminar</button>  <!-- Botón de eliminación -->
@@ -150,9 +150,9 @@
     <script>
         function visualizaprompt(contenido) {
             console.log(contenido);
-            // Escapar caracteres especiales, como saltos de línea, utilizando JSON.stringify
+            
             const escapedContent = JSON.stringify(contenido);
-            // Mostrar el contenido escapado en el modal
+            
             $('#prompt-content').text(escapedContent);
             $('#preview-modal').modal('show');
         }
@@ -161,12 +161,12 @@
             if (confirm('¿Estás seguro de que deseas eliminar este prompt?')) {
                 $.ajax({
                     url: '/eliminar_prompt',
-                    type: 'POST',
+                    type: 'DELETE',
                     contentType: 'application/json',
                     data: JSON.stringify({ nombre: nombre }),
                     success: function(response) {
                         alert(response.message);
-                        $('#prompt-' + nombre).remove();  // Eliminar la fila de la tabla
+                        $('#prompt-' + nombre).remove();  
                     },
                     error: function(error) {
                         alert('Error al eliminar el prompt');
@@ -175,8 +175,8 @@
             }
         }
         function renombrarPrompt(nombre) {
-            $('#nuevo-nombre').val(nombre); // Establecer el valor actual del prompt en el campo de entrada
-            $('#nuevo-nombre').attr('data-antiguo-nombre', nombre); // Almacenar el nombre original
+            $('#nuevo-nombre').val(nombre); 
+            $('#nuevo-nombre').attr('data-antiguo-nombre', nombre); 
             $('#renombrar-modal').modal('show');
         }
 
@@ -186,13 +186,13 @@
 
             $.ajax({
                 url: '/renombrar_prompt',
-                type: 'POST',
+                type: 'PATCH',
                 contentType: 'application/json',
                 data: JSON.stringify({ nuevo_nombre: nuevoNombre, antiguo_nombre: antiguoNombre }),
                 success: function(response) {
                     alert(response.message);
                     $('#renombrar-modal').modal('hide');
-                    location.reload(); // Recargar la página después de la actualización
+                    location.reload(); 
                 },
                 error: function(error) {
                     alert('Error al renombrar el prompt');

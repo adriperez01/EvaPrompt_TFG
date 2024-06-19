@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("promptForm").addEventListener("submit", function (event) {
-        event.preventDefault(); // Evitar el envío por defecto del formulario
+        event.preventDefault(); 
         
         var nombre = document.getElementById("nombre").value;
         var datasetEvaluar = document.getElementById("datasetEvaluar").value;

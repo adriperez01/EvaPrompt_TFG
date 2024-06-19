@@ -75,36 +75,36 @@ def upload_dataset():
             return redirect('/')
 
     elif request.method == 'POST':
-        # Insertar los datos en la tabla conjuntos_dato
+        
         nombre = request.form.get('nombre')
         columnaEvaluar =  request.form.get('columnaEvaluar')
         columnaAsociada = request.form.get('columnaAsociada')
-        # Verificar si se envió un archivo
+        
         if 'file' not in request.files:
             return jsonify({'error': 'No se proporcionó ningún archivo CSV'}), 400
         
         file = request.files['file']
         
-        # Verificar si se seleccionó un archivo
+        
         if file.filename == '':
             return jsonify({'error': 'No se seleccionó ningún archivo CSV'}), 400
 
-        # Procesar el archivo CSV
+        
         if file and allowed_file(file.filename):
-            # Leer el contenido del archivo
+            
             csv_content = file.read().decode('utf-8')
             
-            # Obtener las columnas del dataset
+            
             columnas = obtener_columnas_dataset(csv_content)
             
-            # Parsear el contenido CSV
+            
             dataset = parse_csv(csv_content)
             session['dataset'] = dataset
             
-            #Insertar datos en BD
+            
             insert_datasetbd(nombre, columnaEvaluar, columnaAsociada,dataset)
 
-            # Devolver las columnas y el dataset procesado
+            
             return jsonify({'columnas': columnas, 'dataset': dataset}), 200
         
     return jsonify({'error': 'Método no permitido'}), 405
@@ -120,8 +120,8 @@ def chat():
             return redirect('/')
     elif request.method == 'POST':
         try:
-            data = request.json  # Obtener los datos JSON de la solicitud
-            user_message = data.get('message')  # Obtener el mensaje del usuario
+            data = request.json  
+            user_message = data.get('message') 
             if user_message is None:
                 return jsonify({'error': 'No se proporcionó un mensaje'}), 400
 
@@ -141,31 +141,9 @@ def chat():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-
-@visual_bp.route('/generate', methods=['POST','GET'])
-def generate():
-    if request.method == 'GET':   
-        if 'usuario' in session:
-            usuario = session['usuario']
-            consulta_dataset(usuario[0])
-            return render_template('generador.html')
-        else:
-            return redirect('/')
-    data = request.json
-    prompt = data.get('prompt', '')
-
-    try:
-        response = generate_openai_response(prompt)
-        generated_text = response['choices'][0]['text']
-        
-        return jsonify({'output': generated_text})
-    except Exception as e:
-        print(f'Error generating prompt: {e}')
-        return jsonify({'error': 'Error generating prompt'}), 500        
-
 @visual_bp.route('/estadisticas', methods=['GET', 'POST'])
 def estadisticas():
-    # Redirección si el usuario no está autenticado
+    
     if not session.get('usuario'):
         return redirect('/')
     usuario = session['usuario']
@@ -178,10 +156,10 @@ def estadisticas():
     prompts = cursor.fetchall()
     cursor.close()
     
-    # Crear DataFrame con los datos
+    
     df = pd.DataFrame(prompts)
     
-    # Obtener los valores únicos de técnicas, datasets y métricas para los filtros
+    
     tecnicas = df['tecnica_utilizada'].unique()
     datasets = df['nombre_dataset'].unique()
     metricas = ['porcentaje_acierto', 'recall', 'f1', 'precc']
@@ -191,7 +169,7 @@ def estadisticas():
     metrica_filtro = request.form.get('metrica')
     excluir_prompts = request.form.getlist('excluir_prompts')
     incluir_prompts = request.form.getlist('incluir_prompts')
-        # Si no hay prompts para mostrar, enviar un mensaje
+        
     if df.empty:
         graph_html = '<p>No hay prompts para mostrar.</p>'
         
@@ -201,17 +179,16 @@ def estadisticas():
     if tecnica_filtro:
         df = df[df['tecnica_utilizada'] == tecnica_filtro]
     
-    # Excluir prompts seleccionados
+    
     if excluir_prompts:
         df = df[~df['nombre_prompt'].isin(excluir_prompts)]
     
-    # Incluir prompts previamente excluidos
+    
     if incluir_prompts:
         excluidos_df = pd.DataFrame([p for p in prompts if p['nombre_prompt'] in incluir_prompts])
         df = pd.concat([df, excluidos_df], ignore_index=True)
     
     else:
-        # Crear la gráfica combinada con Plotly
         fig = go.Figure()
         
         if metrica_filtro:
@@ -235,10 +212,10 @@ def estadisticas():
             title_x=0.5
         )
         
-        # Convertir la gráfica a HTML
+        
         graph_html = pio.to_html(fig, full_html=False)
     
-    # Prompts excluidos (no incluidos en el DataFrame filtrado)
+    
     prompts_excluidos = [p for p in prompts if p['nombre_prompt'] not in df['nombre_prompt'].values]
     
     return render_template(
@@ -264,7 +241,37 @@ def manage_datasets():
     else:
         return redirect('/')
 
-@visual_bp.route('/eliminar_dataset', methods=['POST'])
+@visual_bp.route('/manage_prompts')
+def manage_prompts():
+    if 'usuario' in session:
+        usuario = session['usuario']
+        prompts = consulta_prompt(usuario[0])
+        return render_template('manage_prompts.html', prompts = prompts)
+    else:
+        return redirect('/')
+    
+@visual_bp.route('/obtener_dataset', methods=['GET'])
+def obtener_dataset():
+    usuario = session['usuario']
+    print(usuario[0])
+    id_usuario = usuario[0] 
+    nombres = consulta_dataset(id_usuario)
+    response = {'nombres': nombres}
+    return jsonify(response)
+
+@visual_bp.route('/guardar_prompt', methods=['POST'])
+def guardar_prompt():
+    data = request.json
+    print("Datos recibidos:", data) 
+    if guardado_prompt(data):
+        print("Prompt guardado correctamente")
+        return jsonify({'message': 'Prompt guardado correctamente'}), 200
+    else:
+        print("Error al guardar el prompt")
+        return jsonify({'message': 'Error al guardar el prompt'}), 500
+    
+
+@visual_bp.route('/eliminar_dataset', methods=['DELETE'])
 def eliminar_dataset():
     if 'usuario' in session:
         usuario = session['usuario']
@@ -287,18 +294,9 @@ def previsualizar_dataset():
         return jsonify(dataset), 200
     else:
         return jsonify({'message': 'No autorizado'}), 401
+ 
 
-@visual_bp.route('/manage_prompts')
-def manage_prompts():
-    if 'usuario' in session:
-        usuario = session['usuario']
-        prompts = consulta_prompt(usuario[0])
-        return render_template('manage_prompts.html', prompts = prompts)
-    else:
-        return redirect('/')
-    
-
-@visual_bp.route('/eliminar_prompt', methods=['POST'])
+@visual_bp.route('/eliminar_prompt', methods=['DELETE'])
 def eliminar_prompt():
     if 'usuario' in session:
         usuario = session['usuario']
@@ -312,7 +310,7 @@ def eliminar_prompt():
     else:
         return jsonify({'message': 'No autorizado'}), 401
 
-@visual_bp.route('/renombrar_prompt', methods=['POST'])
+@visual_bp.route('/renombrar_prompt', methods=['PATCH'])
 def renombrar_prompt():
     if 'usuario' in session:
         usuario = session['usuario']
@@ -322,7 +320,7 @@ def renombrar_prompt():
         print(type(nuevo_nombre))
         print(type(antiguo_nombre))
 
-        # Aquí realizas la actualización en la base de datos
+        
         db = get_db()
         cursor = db.cursor()
         try:
@@ -337,7 +335,8 @@ def renombrar_prompt():
             cursor.close()
     else:
         return redirect('/')
-@visual_bp.route('/renombrar_dataset', methods=['POST'])
+    
+@visual_bp.route('/renombrar_dataset', methods=['PATCH'])
 def renombrar_dataset():
     if 'usuario' in session:
         usuario = session['usuario']
@@ -349,10 +348,9 @@ def renombrar_dataset():
         cursor = db.cursor()
 
         try:
-            # Deshabilitar temporalmente las verificaciones de claves foráneas
+
             cursor.execute("SET foreign_key_checks = 0")
 
-            # Actualizar la tabla hija (prompts)
             update_query_prompts = """
                 UPDATE prompts 
                 SET nombre_dataset = %s 
@@ -360,7 +358,6 @@ def renombrar_dataset():
             """
             cursor.execute(update_query_prompts, (nuevo_nombre, antiguo_nombre, usuario[0]))
 
-            # Actualizar la tabla padre (conjuntos_datos)
             update_query_conjuntos_datos = """
                 UPDATE conjuntos_datos 
                 SET nombre = %s 
@@ -368,16 +365,13 @@ def renombrar_dataset():
             """
             cursor.execute(update_query_conjuntos_datos, (nuevo_nombre, antiguo_nombre, usuario[0]))
 
-            # Confirmar transacción
             db.commit()
 
         except mysql.connector.Error as error:
-            # Revertir transacción en caso de error
             db.rollback()
             return jsonify({'message': f'Error al renombrar el dataset en la base de datos: {error}'}), 500
         
         finally:
-            # Volver a habilitar las verificaciones de claves foráneas
             cursor.execute("SET foreign_key_checks = 1")
             cursor.close()
 
@@ -386,7 +380,7 @@ def renombrar_dataset():
         return redirect('/')
 
     
-@visual_bp.route('/eliminar_fila', methods=['POST'])
+@visual_bp.route('/eliminar_fila', methods=['DELETE'])
 def eliminar_fila():
     if 'usuario' in session:
         data = request.get_json()
